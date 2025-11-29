@@ -25,3 +25,25 @@ persistence:
   enabled: false
 #  storageClass: "standard"
 #  size: 5Gi
+
+
+# --- PgBouncer 配置 ---
+pgbouncer:
+  enabled: true
+  replicaCount: 2  # 可以多個 PgBouncer 實例提供負載平衡
+  image:
+    repository: edoburu/pgbouncer
+    tag: latest
+    pullPolicy: IfNotPresent
+  ports:
+    pooler: 5432  # PgBouncer 監聽的端口
+
+  # PgBouncer 連線到 Patroni Primary (Leader) 的設定
+  # 它會使用 Patroni Leader Service 的 DNS 名稱
+  databaseHost: {{ .Values.clusterName }} 
+  databasePort: {{ .Values.ports.postgresql }}
+
+  # PgBouncer 使用者帳號 (必須在 Patroni/PostgreSQL 中存在，用於管理和認證)
+  # 我們沿用 Patroni 的 superuser 密碼來創建這個 secret
+  authUsername: pgbouncer
+

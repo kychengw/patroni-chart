@@ -1,0 +1,19 @@
+{{- if .Values.pgbouncer.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.clusterName }}-pgbouncer
+  labels:
+    application: pgbouncer
+    cluster-name: {{ .Values.clusterName }}
+spec:
+  type: ClusterIP
+  selector:
+    application: pgbouncer
+    cluster-name: {{ .Values.clusterName }}
+  ports:
+  - port: {{ .Values.pgbouncer.ports.pooler }}
+    targetPort: {{ .Values.pgbouncer.ports.pooler }}
+    protocol: TCP
+    name: psql
+{{- end }}

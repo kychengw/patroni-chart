@@ -1,0 +1,48 @@
+{{- if .Values.pgbouncer.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.clusterName }}-pgbouncer
+  labels:
+    application: pgbouncer
+    cluster-name: {{ .Values.clusterName }}
+spec:
+  replicas: {{ .Values.pgbouncer.replicaCount }}
+  selector:
+    matchLabels:
+      application: pgbouncer
+      cluster-name: {{ .Values.clusterName }}
+  template:
+    metadata:
+      labels:
+        application: pgbouncer
+        cluster-name: {{ .Values.clusterName }}
+    spec:
+      containers:
+      - name: pgbouncer
+        image: "{{ .Values.pgbouncer.image.repository }}:{{ .Values.pgbouncer.image.tag }}"
+        imagePullPolicy: {{ .Values.pgbouncer.image.pullPolicy }}
+        ports:
+        - name: psql
+          containerPort: {{ .Values.pgbouncer.ports.pooler }}
+        env:
+        # PGBouncer 配置變數 (不同映像檔可能變數不同，這裡使用常見的慣例)
+        - name: DB_HOST
+          value: "{{ .Values.pgbouncer.databaseHost }}"
+        - name: DB_PORT
+          value: "{{ .Values.pgbouncer.databasePort }}"
+        - name: DB_USER
+          value: "{{ .Values.pgbouncer.authUsername }}"
+        - name: DB_POOL_MODE
+          value: "session"
+        - name: DB_DEFAULT_POOL_SIZE
+          value: "20"
+        - name: PGBOUNCER_MAX_CLIENT_CONN
+          value: "1000" # 示例值
+        # 從 Secret 中獲取密碼
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.clusterName }}-pgbouncer-auth
+              key: pgbouncer-auth
+{{- end }}
