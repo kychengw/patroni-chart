@@ -83,6 +83,28 @@ spec:
           value: '0.0.0.0:{{ .Values.ports.postgresql }}'
         - name: PATRONI_RESTAPI_LISTEN
           value: '0.0.0.0:{{ .Values.ports.api }}'
+      {{- if .Values.exporter.enabled }}
+      - name: postgres-exporter
+        image: "{{ .Values.exporter.image.repository }}:{{ .Values.exporter.image.tag }}"
+        imagePullPolicy: {{ .Values.exporter.image.pullPolicy }}
+        ports:
+        - name: metrics
+          containerPort: {{ .Values.exporter.ports.metrics }}
+        env:
+        # **關鍵配置：使用相同的密鑰和本地連線**
+        - name: DATA_SOURCE_NAME
+          # 這裡的連線字串指向本地的 PostgreSQL (同一 Pod 內)
+          # 使用 Patroni 建立的 Replication 帳號進行監控 (這是標準做法)
+          # 注意：PostgreSQL 必須在 'localhost:5432' 上監聽 (Patroni 預設如此)
+          value: "postgresql://standby:$(PATRONI_REPLICATION_PASSWORD)@localhost:{{ .Values.ports.postgresql }}/postgres?sslmode=disable"
+        - name: PATRONI_REPLICATION_PASSWORD # 從 Secret 獲取 Replication 密碼
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.clusterName }}
+              key: replication-password
+        - name: PG_EXPORTER_WEB_LISTEN_ADDRESS # 設置 Exporter 監聽地址
+          value: "0.0.0.0:{{ .Values.exporter.ports.metrics }}"
+      {{- end }}
       volumes:
       {{- if not .Values.persistence.enabled }}
       - name: pgdata

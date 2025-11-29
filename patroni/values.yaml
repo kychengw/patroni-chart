@@ -47,3 +47,12 @@ pgbouncer:
   # 我們沿用 Patroni 的 superuser 密碼來創建這個 secret
   authUsername: pgbouncer
 
+# --- Postgres Exporter 配置 ---
+exporter:
+  enabled: true
+  image:
+    repository: quay.io/prometheuscommunity/postgres-exporter
+    tag: v0.16.0 # 請使用您需要的版本
+    pullPolicy: IfNotPresent
+  ports:
+    metrics: 9187 # Exporter 監聽的端口
