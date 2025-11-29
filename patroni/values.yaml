@@ -1,0 +1,27 @@
+## values.yaml
+# 核心配置
+clusterName: patronidemo  # Patroni/PostgreSQL cluster name
+replicaCount: 3           # StatefulSet 的副本數量 (節點數)
+namespace: default        # ServiceAccount/RoleBinding 中使用的命名空間 (如果需要 ClusterRoleBinding)
+
+# 映像檔配置
+image:
+  repository: patroni
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# PostgreSQL/Patroni 端口
+ports:
+  postgresql: 5432
+  api: 8008
+
+# 密鑰 (Secret) 配置
+secret:
+  superuserPassword: emFsYW5kbw==
+  replicationPassword: cmVwLXBhc3M=
+
+# 儲存配置
+persistence:
+  enabled: false
+#  storageClass: "standard"
+#  size: 5Gi

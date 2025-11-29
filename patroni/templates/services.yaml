@@ -1,0 +1,48 @@
+# headless service to avoid deletion of patronidemo-config endpoint
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.clusterName }}-config
+  labels:
+    application: patroni
+    cluster-name: {{ .Values.clusterName }}
+spec:
+  clusterIP: None
+---
+# Primary/Leader Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.clusterName }}
+  labels:
+    application: patroni
+    cluster-name: {{ .Values.clusterName }}
+spec:
+  type: ClusterIP
+  selector:
+    application: patroni
+    cluster-name: {{ .Values.clusterName }}
+    patroni-role: master
+  ports:
+  - port: {{ .Values.ports.postgresql }}
+    targetPort: {{ .Values.ports.postgresql }}
+    name: postgres
+---
+# Replication/Replica Service (用於指向所有 Replica Pods)
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.clusterName }}-repl
+  labels:
+    application: patroni
+    cluster-name: {{ .Values.clusterName }}
+    role: replica
+spec:
+  type: ClusterIP
+  selector:
+    application: patroni
+    cluster-name: {{ .Values.clusterName }}
+  ports:
+  - port: {{ .Values.ports.postgresql }}
+    targetPort: {{ .Values.ports.postgresql }}
+    name: postgres
