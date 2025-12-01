@@ -22,7 +22,7 @@ spec:
   selector:
     application: patroni
     cluster-name: {{ .Values.clusterName }}
-    patroni-role: master
+    role: primary
   ports:
   - port: {{ .Values.ports.postgresql }}
     targetPort: {{ .Values.ports.postgresql }}
